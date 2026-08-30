@@ -3,3 +3,5 @@ node_modules/
 *.log
 src/index.js
 qr/src/index.js
+ops/ls.env
+ops/ledger.json
