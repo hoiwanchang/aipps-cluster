@@ -1,0 +1,5 @@
+node_modules/
+.wrangler/
+*.log
+src/index.js
+qr/src/index.js

@@ -1,0 +1,19 @@
+name = "qr-mint"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+
+kv_namespaces = [
+  { binding = "RATE", id = "4b429fcec8724a32859836810b7329ce" }
+]
+
+[vars]
+UPTIME = "2026-08-31"
+
+# route 绑定需要 zone 级 Workers Routes:Edit 权限（当前 token 没有）。
+# 拿到后取消注释；临时用子域名：qr-mint.hoiwan.workers.dev
+# routes = [
+#   { pattern = "qr.aipps.vip/*", zone_name = "aipps.vip" }
+# ]
+
+[triggers]
+crons = ["0 12 * * *"]
