@@ -5,3 +5,4 @@ src/index.js
 qr/src/index.js
 ops/creem.env
 ops/ledger.json
+.dev.vars

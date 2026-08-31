@@ -2,8 +2,12 @@ name = "aipps-store"
 main = "src/index.js"
 compatibility_date = "2025-08-01"
 
-[vars]
-# Fill after Kane registers Creem + creates the boilerplate product:
-CREEM_API_KEY = ""
-CREEM_PRODUCT_ID = ""
-CREEM_TEST_MODE = "1"
+# Creem creds are SECRETS (env.CREEM_API_KEY / CREEM_PRODUCT_ID / CREEM_TEST_MODE),
+# injected via CF REST API PUT (type=secret_text) — see deploy.sh notes. They must
+# NOT also exist as empty [vars] here, or wrangler deploy will block the secrets.
+# For local `wrangler dev` they come from .dev.vars (gitignored).
+
+routes = [
+  { pattern = "www.aipps.vip/*", zone_name = "aipps.vip" }
+]
+workers_dev = true

@@ -68,7 +68,7 @@ function htmlPage(title, desc, body, extraHead = "") {
 <meta name="description" content="${desc}">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
-<meta property="og:url" content="https://aipps.vip${body ? "" : ""}">
+<meta property="og:url" content="https://www.aipps.vip">
 ${extraHead}
 <style>
 :root{
@@ -375,7 +375,7 @@ export default {
           headers: { "x-api-key": key, "content-type": "application/json" },
           body: JSON.stringify({
             product_id: productId,
-            success_url: "https://aipps.vip/thank-you",
+            success_url: "https://www.aipps.vip/thanks?checkout_id={checkout_id}",
             customer: body.email ? { email: String(body.email).slice(0, 254) } : undefined,
           }),
         });
@@ -391,10 +391,10 @@ export default {
     if (request.method === "GET") {
       if (path === "/health") return Response.json({ ok: true, service: "aipps-store", uptime: UPTIME, checkout: env.CREEM_API_KEY ? "enabled" : "pending" }, { headers: cors });
       if (path === "/robots.txt") {
-        return new Response("User-agent: *\nAllow: /\n\nSitemap: https://aipps.vip/sitemap.xml\n", { headers: { "content-type": "text/plain", ...cors } });
+        return new Response("User-agent: *\nAllow: /\n\nSitemap: https://www.aipps.vip/sitemap.xml\n", { headers: { "content-type": "text/plain", ...cors } });
       }
       if (path === "/sitemap.xml") {
-        const urls = ["/", "/pricing", "/buy", "/privacy", "/terms"].map((p) => `  <url><loc>https://aipps.vip${p}</loc><lastmod>2026-08-31</lastmod></url>`).join("\n");
+        const urls = ["/", "/pricing", "/buy", "/privacy", "/terms", "/thanks"].map((p) => `  <url><loc>https://www.aipps.vip${p}</loc><lastmod>2026-08-31</lastmod></url>`).join("\n");
         return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`, { headers: { "content-type": "application/xml", ...cors } });
       }
       if (path === "/") {
@@ -413,14 +413,32 @@ export default {
       if (path === "/terms") {
         return new Response(htmlPage("Terms of Service — aipps.vip", "Terms for the aipps free tools and the boilerplate license.", legalPage("terms")), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache", ...cors } });
       }
-      if (path === "/thank-you") {
-        return new Response(htmlPage("Thank you — aipps.vip", "Your purchase is confirmed.", `
-<div class="wrap hero">
-  <div class="kicker">Payment complete</div>
-  <h1 style="font-size:36px">Thanks for buying 🎉</h1>
-  <p class="sub">Your download link is in the confirmation email from Creem. You can always find it again in the <a href="https://creem.io/dashboard" target="_blank" rel="noopener">Creem customer portal</a>.</p>
-  <p class="sub">Anything missing or broken? Email ${SUPPORT_EMAIL} — we answer within 3 business days.</p>
-</div>`), { headers: { "content-type": "text/html; charset=utf-8", ...cors } });
+      if (path === "/thanks" || path === "/thank-you") {
+        const cid = url.searchParams.get("checkout_id") || url.searchParams.get("order_id") || "";
+        const cidLine = cid
+          ? '<p class="sub mono" style="font-size:14px">Order reference: <span style="color:var(--gold)">' + cid + "</span></p>"
+          : "";
+        const toolCards = TOOLS.map(function (t) {
+          return '<div class="card"><div class="tag">' + t.tag + '</div><h3>' + t.name + "</h3><p>" + t.desc + '</p><span class="go">' + t.url.replace("https://", "\u2192 ") + "</span></div>";
+        }).join("\n");
+        const thanksBody =
+          '<div class="wrap hero">' +
+          '<div class="kicker">Payment complete</div>' +
+          '<h1 style="font-size:36px">Thanks for your purchase \ud83c\udf89</h1>' +
+          "<div>" + cidLine + "</div>" +
+          '<p class="sub"><b>Your download link is in the confirmation email from Creem</b> \u2014 check your inbox (and spam). You can always re-download from the <a href="https://creem.io/dashboard" target="_blank" rel="noopener">Creem customer portal</a> with the account you paid with.</p>' +
+          '<div class="btnrow">' +
+          '<a class="btn" href="https://creem.io/dashboard" target="_blank" rel="noopener">Open Creem portal</a>' +
+          '<a class="btn ghost" href="mailto:' + SUPPORT_EMAIL + '?subject=Boilerplate%20order%20' + encodeURIComponent(cid) + '">Contact support</a>' +
+          "</div>" +
+          "</div>" +
+          '<section><div class="wrap">' +
+          "<h2>While you're here</h2>" +
+          '<p class="lede">The same three tools that ship in the boilerplate are free to run right now \u2014 good places to study the patterns in the source:</p>' +
+          '<div class="grid">' + toolCards + "</div>" +
+          '<p style="margin-top:28px;font-size:14px;color:var(--dim)">Anything missing or broken? Email <a href="mailto:' + SUPPORT_EMAIL + '">' + SUPPORT_EMAIL + "</a> \u2014 we answer within 3 business days.</p>" +
+          "</div></section>";
+        return new Response(htmlPage("Thank you \u2014 aipps.vip", "Your purchase is confirmed. Download link is in your email.", thanksBody), { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache", ...cors } });
       }
     }
 
