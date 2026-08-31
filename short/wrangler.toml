@@ -1,0 +1,28 @@
+name = "short-mint"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+
+kv_namespaces = [
+  { binding = "LINKS", id = "efe3bd305ec84b94884c444d42637c5b" }
+]
+
+# Click counters: in-process Durable Object binding (no namespace id needed).
+# Free tier: 100k stateful ops/month — click counting stays $0 for a long time.
+[durable_objects]
+bindings = [{ name = "STATS", class_name = "ClickCounter" }]
+
+[exports.ClickCounter]
+type = "durable-object"
+storage = "sqlite"
+
+[vars]
+UPTIME = "2026-08-31"
+
+# route 绑定需要 zone 级 Workers Routes:Edit 权限（当前 token 没有）。
+# Kane 在 dashboard 加 route 后取消注释；临时用子域名：short-mint.hoiwan.workers.dev
+# routes = [
+#   { pattern = "short.aipps.vip/*", zone_name = "aipps.vip" }
+# ]
+
+[triggers]
+crons = ["0 18 * * *"]

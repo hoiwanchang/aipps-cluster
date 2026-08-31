@@ -127,9 +127,9 @@ function encodePng(data, sizePx, marginCells, fgHex, bgHex) {
 /* ---------------- HTML pages ---------------- */
 const SITE_NAME = "qr-mint";
 const CLUSTER = `<footer class="foot">
-  <span>aipps.vip — free developer utilities</span>
-  <a href="https://api-mint.hoiwan.workers.dev" target="_blank" rel="noopener">api-mint · free APIs</a>
-  <a href="/pricing">pricing</a>
+  <span>aipps.vip — free utilities, no ads, no tracking</span>
+  <a href="https://api.aipps.vip" target="_blank" rel="noopener">api-mint · free APIs</a>
+  <a href="https://short.aipps.vip" target="_blank" rel="noopener">short-mint · free URL shortener</a>
   <a href="/health">status</a>
 </footer>`;
 
