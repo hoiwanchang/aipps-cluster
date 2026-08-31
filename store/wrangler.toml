@@ -1,0 +1,9 @@
+name = "aipps-store"
+main = "src/index.js"
+compatibility_date = "2025-08-01"
+
+[vars]
+# Fill after Kane registers Creem + creates the boilerplate product:
+CREEM_API_KEY = ""
+CREEM_PRODUCT_ID = ""
+CREEM_TEST_MODE = "1"

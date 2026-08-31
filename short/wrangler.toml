@@ -2,6 +2,10 @@ name = "short-mint"
 main = "src/index.js"
 compatibility_date = "2025-08-01"
 
+routes = [
+  { pattern = "short.aipps.vip/*", zone_name = "aipps.vip" }
+]
+
 kv_namespaces = [
   { binding = "LINKS", id = "efe3bd305ec84b94884c444d42637c5b" }
 ]

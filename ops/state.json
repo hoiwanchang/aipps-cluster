@@ -1,0 +1,68 @@
+{
+  "project": "aipps-cluster",
+  "created": "2026-08-31T09:00:00+08:00",
+  "services": {
+    "api-mint": {
+      "domain": "https://api.aipps.vip",
+      "fallback": "https://api-mint.hoiwan.workers.dev",
+      "last_check": "2026-08-31T09:00:38+08:00",
+      "health": 200,
+      "landing": 200,
+      "latency_s": 1.40,
+      "status": "ok"
+    },
+    "qr-mint": {
+      "domain": "https://qr.aipps.vip",
+      "fallback": "https://qr-mint.hoiwan.workers.dev",
+      "last_check": "2026-08-31T09:00:39+08:00",
+      "health": 200,
+      "spot_check": "/svg?data=test 200 image/svg+xml",
+      "landing": 200,
+      "latency_s": 0.87,
+      "status": "ok"
+    },
+    "short-mint": {
+      "domain": "https://short-mint.hoiwan.workers.dev",
+      "planned_domain": "https://short.aipps.vip",
+      "last_check": "2026-08-31T09:01:30+08:00",
+      "health": 200,
+      "spot_check": "/api/stats/demo 200 application/json (demo clicks=3)",
+      "landing": 200,
+      "latency_s": 2.38,
+      "check_via": "proxy 127.0.0.1:7890 + browser UA (workers.dev 需代理)",
+      "status": "ok"
+    }
+  },
+  "short_route_probe": {
+    "url": "https://short.aipps.vip/health",
+    "last_check": "2026-08-31T09:01:00+08:00",
+    "http_code": 0,
+    "verdict": "pending_bind",
+    "note": "000/SSL error = route 未绑，等待 Kane 在 CF dashboard 添加 short.aipps.vip route 后再切主域名（只执行一次）"
+  },
+  "pr_watch": [
+    {
+      "repo": "public-apis/public-apis",
+      "pr": 7151,
+      "status": "open",
+      "last_check": "2026-08-31T09:01:45+08:00",
+      "merged": false,
+      "note": "open 状态持续，无 label 变化，继续每日盯"
+    }
+  ],
+  "revenue": {
+    "provider": "creem",
+    "env_file": "~/projects/aipps-cluster/ops/creem.env",
+    "key_configured": false,
+    "ledger": null,
+    "note": "creem.env 存在但 CREEM_API_KEY 为空，跳过对账；待 Kane 注册后填 key"
+  },
+  "ops_actions": {
+    "2026-08-31": [
+      "首次每日巡检：三服务 health+landing 全 200，qr svg 抽查 200，short stats 抽查 200，无告警",
+      "short.aipps.vip route 探测 000，未绑，主域名不切换",
+      "PR #7151 open，未合入",
+      "Creem key 未配置，跳过收入对账"
+    ]
+  }
+}
