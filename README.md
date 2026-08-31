@@ -9,7 +9,7 @@ Kane + Hermes（AI agent）自主运营的 **免费工具集群**，全部跑在
 | [api-mint](https://api.aipps.vip) | ✅ live（`api.aipps.vip`，端点：时区/汇率/币价/URL提取） | 开发者受众引流入口，GitHub 可发现性（public-apis PR #7151） |
 | [qr-mint](https://qr.aipps.vip) | ✅ live（`qr.aipps.vip`，QR 生成 PNG/SVG/永久页） | **高搜索量消费品流量引擎**，程序化 SEO（/q/ 页） |
 | [short-mint](https://short.aipps.vip) | ✅ live（`short.aipps.vip` 已绑，代码 `short/`） | **病毒传播引擎**：短链自带曝光；DO 原子点击计数、永久无过期、免费 API |
-| [store](https://aipps-store.hoiwan.workers.dev) | ⚠️ 待绑 `aipps.vip/*`（代码 `store/`） | **变现门面**：集群主页 + $29 boilerplate 产品页/定价/法律页（Creem 审核要求），checkout 接口已备好 |
+| [store](https://www.aipps.vip) | ✅ live（`www.aipps.vip` 已绑，代码 `store/`） | **变现门面**：集群主页 + $29 boilerplate 产品页/定价/法律页 + `/thanks` 付款成功页；Creem live checkout 已全链路打通 |
 
 workers.dev 备用地址（国内不可达）：`*.hoiwan.workers.dev`
 
@@ -33,7 +33,7 @@ Creem: 模板/数字产品/付费 API                     ← 变现（待 Kane 
 
 ## 待解锁
 
-1. ~~`api.aipps.vip` / `qr.aipps.vip` / `short.aipps.vip` 域名绑定~~ ✅ 已绑定并验证（2026-08-31）
-2. **`aipps.vip/*` route 绑到 aipps-store**（dashboard 手动加，和 short 一样；审核要求主域可访问）
-3. Creem 注册 → 建 boilerplate 产品（$29）→ API key 填 `store/wrangler.toml` 的 CREEM_API_KEY/CREEM_PRODUCT_ID → checkout 自动激活
+1. ~~`api.aipps.vip` / `qr.aipps.vip` / `short.aipps.vip` / `www.aipps.vip` 域名绑定~~ ✅ 已绑定并验证（2026-08-31）
+2. ~~Creem 注册 + boilerplate 产品 + checkout~~ ✅ 已打通（2026-08-31）：live key 走 CF secrets（`store/deploy.sh` 一键 deploy+secrets），`POST /api/checkout` 线上真实建单成功，success_url → `https://www.aipps.vip/thanks`
+3. Creem 账户/产品审核通过后：配结款账户（Wise/Payoneer）；首单后确认交付邮件
 4. 集群第 4 个产品 meta-mint（SEO 检查，roadmap 首位；见 CLUSTER-ROADMAP.md）

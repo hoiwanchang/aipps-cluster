@@ -5,6 +5,8 @@
 
 > 收款平台 2026-08-31 更新：Lemon Squeezy 结款走 Stripe，中国个人无法使用（已弃用）。
 > 改用 **Creem**（creem.io，个人可注册、支付宝/Wise 提现、费率 3.9%+$0.4），备选 Gumroad/Paddle。
+> 2026-08-31：Creem live checkout 已全链路打通（store 主域 `www.aipps.vip`，`/thanks` 页，
+> secrets 走 CF REST，`store/deploy.sh` 一键部署）。账户/产品审核中，通过后配 Wise/Payoneer 结款。
 
 ## 已上线
 - api-mint — 开发者 API 引流（时区/汇率/币价/URL 提取）
