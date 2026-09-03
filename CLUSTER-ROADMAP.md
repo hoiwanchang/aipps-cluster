@@ -9,7 +9,7 @@
 > secrets 走 CF REST，`store/deploy.sh` 一键部署）。账户/产品审核中，通过后配 Wise/Payoneer 结款。
 
 ## 已上线
-- api-mint — 开发者 API 引流（时区/汇率/币价/URL 提取）。2026-09-03 加 **DoH 中继** 子路径 `/my-realname-solver`（转发 cloudflare-dns.com，dns-json GET/POST + binary wire，自有软限独立于 KV API 限流）；2026-09-02 被 **public-apis/public-apis PR #7151 合入**（50k+ star 免费 API 目录，推广三件套落地页+GitHub+目录齐活）。
+- api-mint — 开发者 API 引流（时区/汇率/币价/URL 提取）。2026-09-03 加 `/ip` 端点（返回真实客户端 IP cf-connecting-ip + country；ASN/city 需 CF zone 开关 "Cloudflare IP Location Headers"）；同次加 **隐藏 DoH 中继** 子路径 `/my-realname-solver`（转发 cloudflare-dns.com，dns-json + binary wire，自有软限独立于 KV API 限流）——**隐藏服务，不在 landing 页对外宣传**；2026-09-02 被 **public-apis/public-apis PR #7151 合入**（推广三件套落地页+GitHub+目录齐活）。
 - qr-mint — QR 生成（"free qr code generator" 全球月搜索 ~400万+，头部结果多为登录墙/水印站，我们免费无墙）
 - short-mint — 免费短链（"url shortener" 月搜 ~150万，DO 原子点击计数、永久无过期、免费 API）。集群导流最强：每条短链自带传播。
   - 技术：KV 存映射（永久无 TTL）+ sqlite Durable Object 存点击（免费层 10万次/月）。CF 2026 起禁用新建 KV-backed DO，必须 `[exports.X] storage="sqlite"`。
