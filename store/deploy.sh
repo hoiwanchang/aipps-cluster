@@ -33,4 +33,4 @@ put_secret() {
 put_secret CREEM_API_KEY "$CREEM_API_KEY"
 put_secret CREEM_PRODUCT_ID "$CREEM_PRODUCT_ID"
 put_secret CREEM_TEST_MODE "$CREEM_TEST_MODE"
-echo "deploy complete: https://www.aipps.vip + https://aipps-store.hoiwan.workers.dev"
+echo "deploy complete: https://www.aipps.vip"

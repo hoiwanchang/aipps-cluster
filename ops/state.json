@@ -4,58 +4,64 @@
   "services": {
     "api-mint": {
       "domain": "https://api.aipps.vip",
-      "fallback": "https://api-mint.hoiwan.workers.dev",
-      "last_check": "2026-08-31T09:00:38+08:00",
+      "fallback": "https://api.aipps.vip",
+      "last_check": "2026-09-03T09:00:40+08:00",
       "health": 200,
       "landing": 200,
-      "latency_s": 1.40,
+      "latency_s": 1.59,
       "status": "ok"
     },
     "qr-mint": {
       "domain": "https://qr.aipps.vip",
-      "fallback": "https://qr-mint.hoiwan.workers.dev",
-      "last_check": "2026-08-31T09:00:39+08:00",
+      "fallback": "https://qr.aipps.vip",
+      "last_check": "2026-09-03T09:00:40+08:00",
       "health": 200,
       "spot_check": "/svg?data=test 200 image/svg+xml",
       "landing": 200,
-      "latency_s": 0.87,
+      "latency_s": 1.03,
       "status": "ok"
     },
     "short-mint": {
-      "domain": "https://short-mint.hoiwan.workers.dev",
+      "domain": "https://short.aipps.vip",
       "planned_domain": "https://short.aipps.vip",
-      "last_check": "2026-08-31T09:01:30+08:00",
+      "last_check": "2026-09-03T09:00:40+08:00",
       "health": 200,
-      "spot_check": "/api/stats/demo 200 application/json (demo clicks=3)",
+      "spot_check": "/api/stats/demo 200 application/json (demo clicks=28)",
       "landing": 200,
-      "latency_s": 2.38,
-      "check_via": "proxy 127.0.0.1:7890 + browser UA (workers.dev 需代理)",
+      "latency_s": 1.18,
+      "check_via": "直连（route 已绑，不再需要 proxy）",
       "status": "ok"
     }
   },
   "short_route_probe": {
     "url": "https://short.aipps.vip/health",
-    "last_check": "2026-08-31T09:01:00+08:00",
-    "http_code": 0,
-    "verdict": "pending_bind",
-    "note": "000/SSL error = route 未绑，等待 Kane 在 CF dashboard 添加 short.aipps.vip route 后再切主域名（只执行一次）"
+    "last_check": "2026-09-01T09:10:00+08:00",
+    "http_code": 200,
+    "verdict": "bound",
+    "note": "2026-09-01 直连 200，Kane 已绑 route，主域名切换完成"
   },
   "pr_watch": [
     {
       "repo": "public-apis/public-apis",
       "pr": 7151,
-      "status": "open",
-      "last_check": "2026-08-31T09:01:45+08:00",
-      "merged": false,
-      "note": "open 状态持续，无 label 变化，继续每日盯"
+      "status": "merged",
+      "last_check": "2026-09-03T09:00:40+08:00",
+      "merged": true,
+      "merged_at": "2026-09-02T02:13:35Z",
+      "title": "Add api-mint API",
+      "html_url": "https://github.com/public-apis/public-apis/pull/7151",
+      "note": "2026-09-03 巡检确认已合入（merged_at 2026-09-02T02:13:35Z）。api-mint 进入 50k+ star 公开 API 目录，持续带来 SEO 长尾流量，无需重提"
     }
   ],
   "revenue": {
     "provider": "creem",
     "env_file": "~/projects/aipps-cluster/ops/creem.env",
-    "key_configured": false,
-    "ledger": null,
-    "note": "creem.env 存在但 CREEM_API_KEY 为空，跳过对账；待 Kane 注册后填 key"
+    "key_configured": true,
+    "test_mode": 0,
+    "ledger": "~/projects/aipps-cluster/ops/ledger.json",
+    "total_transactions": 0,
+    "last_reconciliation": "2026-09-03T09:00:40+08:00",
+    "api_notes": "api.creem.io 校园网直连被墙，走 proxy 127.0.0.1:7890；需 browser UA（默认 UA 触发 403 error 1010）；/v1/transactions/search 不接受 limit 参数（400），默认分页，取 items 数组；响应结构 {items:[], pagination:{total_records}}。对账脚本用 curl 或 requests+proxies，勿用 urllib（urllib 直连 api.github.com 也会 SSL EOF，本环境 TLS 握手对 urllib 异常）"
   },
   "ops_actions": {
     "2026-08-31": [
@@ -63,6 +69,32 @@
       "short.aipps.vip route 探测 000，未绑，主域名不切换",
       "PR #7151 open，未合入",
       "Creem key 未配置，跳过收入对账"
+    ],
+    "2026-09-01": [
+      "每日巡检 09:00 CST：api/qr/short/www 四服务 health 全 200，store checkout:enabled，qr svg 200，short stats 200（demo clicks 13），无 Bark",
+      "short.aipps.vip route 已绑定，主域名生效，切换完成",
+      "PR #7151 仍 open（0 评论 0 review）",
+      "Creem 对账完成：0 交易（审核中，符合预期），ledger.json 建立",
+      "GitHub 凭证核对：.git-credentials 存的是 gho_ 前缀 OAuth access token（浏览器登录用），此类令牌不能用于 REST API 认证（/user 401 Bad credentials 属预期）；今日 PR 检查实为匿名读成功（200，0 评论 0 review）。写操作（开 PR/回复）需 Kane 提供 ghp_/github_pat_ 格式 PAT"
+    ],
+    "2026-09-02": [
+      "每日巡检 09:00 CST：api/qr/short/www 四服务 health 全 200（1.59s/1.03s/1.18s/2.15s），store checkout:enabled，qr svg 200 image/svg+xml，short stats 200（demo clicks 20），无 Bark",
+      "PR #7151 仍 open（state=open, merged=false, updated 2026-08-30T16:30Z，无新变化），继续每日盯",
+      "Creem 对账：live key 有效（200），0 交易（账户审核中，符合预期），ledger.json 时间戳已更新"
     ]
+    ,
+    "2026-09-03": [
+      "每日巡检 09:00 CST：api/qr/short/www 四服务 health 全 200，store checkout:enabled，qr /svg?data=test 200 image/svg+xml，short /api/stats/demo 200（demo clicks 28，昨 20），无 Bark",
+      "PR #7151 已合入！merged_at 2026-09-02T02:13:35Z（昨日 09:01 巡检时仍 open，今晨确认 closed+merged=true）。api-mint 正式进入 public-apis 目录，pr_watch 标记 merged，停止每日盯",
+      "Creem 对账：live key 有效（200），0 交易（账户审核中，符合预期），ledger.json 时间戳已更新"
+    ]
+  },
+  "store": {
+    "domain": "https://www.aipps.vip",
+    "last_check": "2026-09-03T09:00:40+08:00",
+    "health": 200,
+    "checkout": "enabled",
+    "check_via": "proxy 127.0.0.1:7890 + browser UA",
+    "status": "ok"
   }
 }

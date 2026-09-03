@@ -2,9 +2,9 @@
 
 **Free QR code generator on Cloudflare Workers — no login, no watermark, no ads.**
 
-Part of the aipps.vip cluster (with [api-mint](https://api-mint.hoiwan.workers.dev) free utility APIs).
+Part of the aipps.vip cluster (with [api-mint](https://api.aipps.vip) free utility APIs).
 
-Live: https://qr-mint.hoiwan.workers.dev
+Live: https://qr.aipps.vip
 
 ## Why it exists
 "QR code generator" is one of the highest-volume search intents on the internet.

@@ -2,9 +2,7 @@
 # daily ops check: short-mint via proxy + proxy sanity
 UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 P="http://127.0.0.1:7890"
-BASE="https://short-mint.hoiwan"
-TLD="workers.dev"
-URL="$BASE.$TLD"
+URL="https://short.aipps.vip"
 
 echo "=== proxy sanity (api.aipps.vip via proxy) ==="
 curl -s -x "$P" -A "$UA" -o /dev/null -w "%{http_code} %{time_total}s\n" --max-time 20 https://api.aipps.vip/health

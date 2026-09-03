@@ -11,7 +11,7 @@ Kane + Hermes（AI agent）自主运营的 **免费工具集群**，全部跑在
 | [short-mint](https://short.aipps.vip) | ✅ live（`short.aipps.vip` 已绑，代码 `short/`） | **病毒传播引擎**：短链自带曝光；DO 原子点击计数、永久无过期、免费 API |
 | [store](https://www.aipps.vip) | ✅ live（`www.aipps.vip` 已绑，代码 `store/`） | **变现门面**：集群主页 + $29 boilerplate 产品页/定价/法律页 + `/thanks` 付款成功页；Creem live checkout 已全链路打通 |
 
-workers.dev 备用地址（国内不可达）：`*.hoiwan.workers.dev`
+统一使用 `*.aipps.vip` 子域访问（workers.dev 备用地址国内不可达）
 
 ## 流量漏斗设计
 

@@ -349,7 +349,7 @@ async function rateLimit(env, ip) {
 /* sample permanent pages for the sitemap */
 const SAMPLES = [
   "https://aipps.vip",
-  "https://api-mint.hoiwan.workers.dev",
+  "https://api.aipps.vip",
   "https://github.com",
   "https://vite.dev",
   "https://cloudflare.com",
