@@ -301,8 +301,25 @@ function notFoundPage(code) {
 }
 
 /* ---------------- main ---------------- */
+
+/* --- daily PV counter (shared KV AIPPS_PV) ---
+   One read-modify-write per request (accurate even at low traffic).
+   /health excluded so cron probes don't inflate. Free tier: 10k KV
+   writes/mo — fine at launch; switch to a Durable Object atomic counter
+   if volume grows past that. */
+const PV_PRODUCT = "short";
+function pvBump(env, ctx) {
+  const key = "pv:" + PV_PRODUCT + ":" + new Date().toISOString().slice(0, 10);
+  if (ctx && ctx.waitUntil) ctx.waitUntil((async () => {
+    try {
+      const cur = parseInt((await env.PV.get(key)) || "0", 10) || 0;
+      await env.PV.put(key, String(cur + 1));
+    } catch {}
+  })());
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
     const origin = url.origin;
@@ -312,6 +329,9 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
+
+    // --- daily PV count (KV AIPPS_PV; /health excluded so cron probes don't inflate) ---
+    if (path !== "/health") pvBump(env, ctx);
 
     // static / cheap routes (no rate limit)
     if (request.method === "GET") {

@@ -3,7 +3,8 @@ main = "src/index.js"
 compatibility_date = "2025-08-01"
 
 kv_namespaces = [
-  { binding = "RATE", id = "4b429fcec8724a32859836810b7329ce" }
+  { binding = "RATE", id = "4b429fcec8724a32859836810b7329ce" },
+  { binding = "PV", id = "e864d373abcd452eb9e865720cb56c8c" }
 ]
 
 [vars]

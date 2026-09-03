@@ -7,7 +7,8 @@ routes = [
 ]
 
 kv_namespaces = [
-  { binding = "LINKS", id = "efe3bd305ec84b94884c444d42637c5b" }
+  { binding = "LINKS", id = "efe3bd305ec84b94884c444d42637c5b" },
+  { binding = "PV", id = "e864d373abcd452eb9e865720cb56c8c" }
 ]
 
 # Click counters: in-process Durable Object binding (no namespace id needed).
