@@ -11,3 +11,11 @@ routes = [
   { pattern = "www.aipps.vip/*", zone_name = "aipps.vip" }
 ]
 workers_dev = true
+
+# --- PV counter: Durable Object (zero KV) ---
+[durable_objects]
+bindings = [{ name = "PV", class_name = "PVCounter" }]
+
+[exports.PVCounter]
+type = "durable-object"
+storage = "sqlite"

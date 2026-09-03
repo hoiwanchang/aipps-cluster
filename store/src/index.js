@@ -10,6 +10,7 @@
  *   CREEM_API_KEY   — live or test key (creem_ / creem_test_); checkout disabled until set
  *   CREEM_TEST_MODE — "1" to use test-api.creem.io (default 1 until Kane flips it)
  */
+import { DurableObject } from "cloudflare:workers";
 
 const SUPPORT_EMAIL = "support@aipps.vip";
 const UPTIME = "2026-08";
@@ -335,9 +336,30 @@ ${isPrivacy ? `
 </div></section>`;
 }
 
+
+/* --- daily PV counter: Durable Object (zero KV; separate 100k-ops/mo quota). --- */
+export class PVCounter extends DurableObject {
+  async add(day) {
+    const k = "pv:" + day;
+    const n = (await this.ctx.storage.get(k)) || 0;
+    await this.ctx.storage.put(k, n + 1);
+    return n + 1;
+  }
+  async value(day) {
+    return (await this.ctx.storage.get("pv:" + day)) || 0;
+  }
+  async reset(key, day) {
+    if (key !== "b9579c05a866cf1e6c7dfc46e78aa358") return { ok: false };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day || "")) return { ok: false };
+    const k = "pv:" + day;
+    const n = (await this.ctx.storage.get(k)) || 0;
+    await this.ctx.storage.delete(k);
+    return { ok: true, cleared: n };
+  }
+}
 /* ---------------- worker ---------------- */
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
     const cors = {
@@ -346,6 +368,30 @@ export default {
       "access-control-allow-headers": "content-type",
     };
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+
+    // --- daily PV count (DurableObject; /health + /api/* excluded) ---
+    const pvStub = env.PV.get(env.PV.idFromName("global"));
+    if (path !== "/health" && !path.startsWith("/api/")) {
+      ctx.waitUntil(pvStub.add(new Date().toISOString().slice(0, 10)));
+    }
+
+    // --- /__pv: PV stats (ops, not advertised) ---
+    if (path === "/__pv") {
+      try {
+        const days = [];
+        const d = new Date();
+        for (let i = 0; i < 8; i++) days.push(new Date(d.getTime() - i * 86400000).toISOString().slice(0, 10));
+        if (url.searchParams.get("reset") === "1") {
+          const r = await pvStub.reset(url.searchParams.get("r") || "", days[0]);
+          return Response.json({ product: "www", reset: r }, { headers: cors });
+        }
+        const series = [];
+        for (const day of days) series.push({ day: day, n: await pvStub.value(day) });
+        return Response.json({ product: "www", today: days[0], series: series }, { headers: cors });
+      } catch (e) {
+        return Response.json({ error: String(e && e.message || e) }, { status: 500, headers: cors });
+      }
+    }
 
     // API: create a Creem checkout session
     if (path === "/api/checkout" && request.method === "POST") {

@@ -358,6 +358,14 @@ export class PVCounter extends DurableObject {
   async value(day) {
     return (await this.ctx.storage.get("pv:" + day)) || 0;
   }
+  async reset(key, day) {
+    if (key !== "b9579c05a866cf1e6c7dfc46e78aa358") return { ok: false };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day || "")) return { ok: false };
+    const k = "pv:" + day;
+    const n = (await this.ctx.storage.get(k)) || 0;
+    await this.ctx.storage.delete(k);
+    return { ok: true, cleared: n };
+  }
 }
 
 /* sample permanent pages for the sitemap */
@@ -403,7 +411,11 @@ export default {
         const days = [];
         const d = new Date();
         for (let i = 0; i < 8; i++) days.push(new Date(d.getTime() - i * 86400000).toISOString().slice(0, 10));
-        const series = [];
+                if (url.searchParams.get("reset") === "1") {
+          const r = await pvStub.reset(url.searchParams.get("r") || "", days[0]);
+          return new Response(JSON.stringify({ product: "qr", reset: r }), { status: 200, headers: { "content-type": "application/json" } });
+        }
+const series = [];
         for (const day of days) series.push({ day: day, n: await pvStub.value(day) });
         return jsonBody({ product: "qr", today: days[0], series: series });
       } catch (e) {
