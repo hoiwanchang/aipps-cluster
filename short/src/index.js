@@ -307,15 +307,22 @@ function notFoundPage(code) {
    /health excluded so cron probes don't inflate. Free tier: 10k KV
    writes/mo — fine at launch; switch to a Durable Object atomic counter
    if volume grows past that. */
-const PV_PRODUCT = "short";
+const PV_PREFIX = "pv:";
+const PV_TTL = 35 * 86400;
 function pvBump(env, ctx) {
-  const key = "pv:" + PV_PRODUCT + ":" + new Date().toISOString().slice(0, 10);
-  if (ctx && ctx.waitUntil) ctx.waitUntil((async () => {
-    try {
-      const cur = parseInt((await env.PV.get(key)) || "0", 10) || 0;
-      await env.PV.put(key, String(cur + 1));
-    } catch {}
-  })());
+  const day = new Date().toISOString().slice(0, 10);
+  const key = PV_PREFIX + day + ":" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  if (ctx && ctx.waitUntil) ctx.waitUntil(env.PV.put(key, "1", { expirationTtl: PV_TTL }));
+}
+async function pvCount(env, day) {
+  let total = 0, cursor = "";
+  for (let i = 0; i < 20; i++) {
+    const r = await env.PV.list({ prefix: PV_PREFIX + day + ":", cursor: cursor || undefined, limit: 1000 });
+    total += r.keys.length;
+    if (r.list_complete) break;
+    cursor = r.cursor;
+  }
+  return total;
 }
 
 export default {
@@ -352,6 +359,20 @@ export default {
           `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
           urls.map((u) => `  <url><loc>${origin}${u}</loc></url>`).join("\n") + `\n</urlset>`;
         return new Response(body, { headers: { "content-type": "application/xml; charset=utf-8" } });
+      }
+      // --- /__pv: PV stats read (secret-guarded, ops only; not advertised) ---
+      if (path === "/__pv") {
+        // PV 数据不敏感（仅每日访问量），免鉴权；ops cron 直接 GET 读取
+        try {
+          const days = [];
+          const d = new Date();
+          for (let i = 0; i < 8; i++) days.push(new Date(d.getTime() - i * 86400000).toISOString().slice(0, 10));
+          const series = [];
+          for (const day of days) series.push({ day: day, n: await pvCount(env, day) });
+          return jsonBody({ product: "short", today: days[0], series: series });
+        } catch (e) {
+          return jsonBody({ error: String(e && e.message || e) }, 500);
+        }
       }
       if (path === "/__cron") {
         return jsonBody(await refreshSummary(env));
