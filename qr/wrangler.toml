@@ -2,10 +2,16 @@ name = "qr-mint"
 main = "src/index.js"
 compatibility_date = "2025-08-01"
 
-kv_namespaces = [
-  { binding = "RATE", id = "4b429fcec8724a32859836810b7329ce" },
-  { binding = "PV", id = "e864d373abcd452eb9e865720cb56c8c" }
-]
+# 限流已改内存计数；PV 计数已迁 Durable Object → 本 worker 零 KV。
+
+
+# --- PV counter: Durable Object (zero KV; separate 100k-ops/mo quota) ---
+[durable_objects]
+bindings = [{ name = "PV", class_name = "PVCounter" }]
+
+[exports.PVCounter]
+type = "durable-object"
+storage = "sqlite"
 
 [vars]
 UPTIME = "2026-08-31"

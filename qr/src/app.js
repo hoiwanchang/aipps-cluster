@@ -333,17 +333,31 @@ function jsonBody(obj, status = 200) {
   });
 }
 
-async function rateLimit(env, ip) {
-  if (!env.RATE) return;
+const rlMem = new Map(); // ip -> {c, r} (in-memory per isolate; no KV)
+function rateLimit(ip) {
   const now = Date.now();
-  const k = "rl:" + ip;
-  const v = await env.RATE.get(k);
-  const n = v ? parseInt(v, 10) : 0;
-  if (n >= RATE_LIMIT) {
-    await env.RATE.put(k, String(n), { expirationTtl: RATE_WINDOW });
-    throw { status: 429, body: { error: "rate limit exceeded", limit: RATE_LIMIT, window_seconds: RATE_WINDOW } };
+  let b = rlMem.get(ip);
+  if (!b || b.r < now) b = { c: 0, r: now + 60 * 1000 };
+  b.c += 1;
+  if (rlMem.size > 8000) for (const [k, v] of rlMem) if (v.r < now) rlMem.delete(k);
+  if (b.c > RATE_LIMIT) {
+    throw { status: 429, body: { error: "rate limit exceeded", limit: RATE_LIMIT, window_seconds: 60 } };
   }
-  await env.RATE.put(k, String(n + 1), { expirationTtl: RATE_WINDOW });
+}
+
+
+/* --- daily PV counter: Durable Object (zero KV writes; DO storage is a
+   separate quota — 100k stateful ops/mo on free tier — and atomic). --- */
+export class PVCounter extends DurableObject {
+  async add(day) {
+    const k = "pv:" + day;
+    const n = (await this.ctx.storage.get(k)) || 0;
+    await this.ctx.storage.put(k, n + 1);
+    return n + 1;
+  }
+  async value(day) {
+    return (await this.ctx.storage.get("pv:" + day)) || 0;
+  }
 }
 
 /* sample permanent pages for the sitemap */
@@ -359,27 +373,6 @@ const SAMPLES = [
 ];
 
 
-/* --- daily PV counter (KV AIPPS_PV): one key per request, pure write.
-   No read-modify-write -> no race loss, exact count at any concurrency.
-   Keys auto-expire after 35 days. /health excluded so cron probes don't
-   inflate. Read: GET /__pv (ops only, not advertised). --- */
-const PV_PREFIX = "pv:";
-const PV_TTL = 35 * 86400;
-function pvBump(env, ctx) {
-  const day = new Date().toISOString().slice(0, 10);
-  const key = PV_PREFIX + day + ":" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  if (ctx && ctx.waitUntil) ctx.waitUntil(env.PV.put(key, "1", { expirationTtl: PV_TTL }));
-}
-async function pvCount(env, day) {
-  let total = 0, cursor = "";
-  for (let i = 0; i < 20; i++) {
-    const r = await env.PV.list({ prefix: PV_PREFIX + day + ":", cursor: cursor || undefined, limit: 1000 });
-    total += r.keys.length;
-    if (r.list_complete) break;
-    cursor = r.cursor;
-  }
-  return total;
-}
 
 export default {
   async fetch(request, env, ctx) {
@@ -397,8 +390,9 @@ export default {
     }
     if (request.method !== "GET") return jsonBody({ error: "method not allowed" }, 405);
 
-    // --- daily PV count (KV AIPPS_PV; /health excluded so cron probes don't inflate) ---
-    if (path !== "/health") pvBump(env, ctx);
+    // --- daily PV count (DurableObject; /health excluded so cron probes don't inflate) ---
+    const pvStub = env.PV.get(env.PV.idFromName("global"));
+    if (path !== "/health") ctx.waitUntil(pvStub.add(new Date().toISOString().slice(0, 10)));
 
     // cheap routes
     if (path === "/health") return jsonBody({ ok: true, service: "qr-mint", uptime: "2026-08-31" });
@@ -410,7 +404,7 @@ export default {
         const d = new Date();
         for (let i = 0; i < 8; i++) days.push(new Date(d.getTime() - i * 86400000).toISOString().slice(0, 10));
         const series = [];
-        for (const day of days) series.push({ day: day, n: await pvCount(env, day) });
+        for (const day of days) series.push({ day: day, n: await pvStub.value(day) });
         return jsonBody({ product: "qr", today: days[0], series: series });
       } catch (e) {
         return jsonBody({ error: String(e && e.message || e) }, 500);
@@ -437,7 +431,7 @@ export default {
     // everything below consumes rate limit
     let limited;
     try {
-      await rateLimit(env, ip);
+      rateLimit(ip);
     } catch (e) {
       return jsonBody(e.body, e.status);
     }
